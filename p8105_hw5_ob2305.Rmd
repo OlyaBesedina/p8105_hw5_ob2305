@@ -35,37 +35,98 @@ iris_with_missing = iris %>%
 ```
 
 # Problem 1
+
+Count missing values in the df
 ```{r}
 skimr::skim(iris_with_missing)
 ```
 
 
-```{r}
+```{r, eval = FALSE}
+output = vector("list", length = 4)
+
+for (i in 1:ncol(data)) {
+  
+  data[is.na(data[,i]), i] <- mean(data[,i], na.rm = TRUE)
+  
+}
+```
+
+
+```{r, eval = FALSE}
+# temp data with numeric vars only 
+
+iris_with_missing = iris_with_missing %>% janitor::clean_names()
+
+# df w/o char var
+iris_new = iris_with_missing %>% 
+  janitor::clean_names() %>% 
+  select (- species)
+
+
+# function for the mean
 my_f = function(x) {
   
   if(!is.numeric(x)) {
     stop ("Argument x should be numeric")
-  } 
+  }
   
-  mean_x = mean(x)
+  mean_x = x %>% 
+    na.omit() %>% 
+    mean()
   
   tibble(
     mean_calc = mean_x
   )
 }
 
-
-iris_new = iris_with_missing %>% 
-  janitor::clean_names() %>% 
-  select (- species)
-  
-  
-  
-  
-my_f(iris_new[[1]])
+my_f(iris_new[[2]])
 
 iris_new[[1]]
+
+# function for char
+
+char_func = function(data) {
+  
+  data %>% 
+    mutate_if(is.character, ~replace_na(data, "virginica"))
+  
+  view(data)
+}
+
+char_func(iris_with_missing)
+
+df <- tibble(x = c(1, 2, NA), y = c("a", NA, "b"), z = list(1:5, NULL, 10:20))
+df %>% replace_na(list(x = 0, y = "unknown"))
+maybe = iris_with_missing %>% replace_na(list(species = "virginica"))
+df %>% mutate(x = replace_na(x, 0))
+
 ```
+
+create a loop
+
+```{r, eval = FALSE}
+output = vector("list", length = 4)
+
+for (i in 1:4) {
+  
+  output[[i]] = my_f(iris_new[[i]])
+}
+
+output = output %>% 
+  bind_rows()
+```
+
+
+Map 
+
+```{r, eval = FALSE}
+final_output = map(name_df, name_function)
+
+```
+
+
+
 
 
 
