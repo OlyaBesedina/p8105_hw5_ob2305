@@ -125,19 +125,35 @@ The plot above depicts change of values over the 8 weeks of trial for each parti
 
 # Problem 3
 
-```{r, eval = FALSE}
-regression = function(n, beta0 = 2, beta1 = 0) {
+```{r}
+
+sim_regression = function(beta0 = 2, beta1 = 0) {
   
   data = tibble(
-    x = rnorm(n, mean = 0, sd = 1),
-    y = beta + beta1 * x + rnorm(n, 0, 50)
+    x = rnorm(30, mean = 0, sd = 1),
+    y = beta0 + beta1 * x + rnorm(30, 0, sqrt(50))
   )
   
   ls_fit = lm(y ~ x, data = data)
+  
+  tibble(
+    beta0_hat = coef(ls_fit)[1],
+    beta1_hat = coef(ls_fit)[2]
+  )
 }
 
-regression(n = 30)
 ```
+
+Generate 10000 datasets from the model
+
+```{r}
+output = rerun(10000, sim_regression()) %>% 
+  bind_rows()
+
+```
+
+
+
 
 
 
