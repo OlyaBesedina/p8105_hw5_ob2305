@@ -148,28 +148,64 @@ set.seed(1)
 
 output_results = rerun(10000, sim_regression()) %>% 
   bind_rows() %>% 
+  janitor::clean_names() %>% 
   filter(term == "x") %>% 
-  select(estimate, p.value) 
-  
+  select(estimate, p_value) 
 ```
 
-Hypothesis test
+Simulation for beta 1:6
 
 ```{r}
-h_data = 
-  output_results %>%
-  summarize(
-    p.value_acc = sum(p.value <= 0.05),
-    p.value_total = n()) 
+sim_results = 
+  tibble(
+  beta = c(1:6)) %>% 
+  mutate(
+    output_list = map(.x = beta, ~rerun(10000, sim_regression(beta1 = .x))),
+    output_df = map(output_list, bind_rows)
+  ) %>% 
+  select(-output_list) %>% 
+  unnest(output_df) %>% 
+  janitor::clean_names() %>% 
+  filter(term == "x") %>% 
+  select(beta, estimate, p_value) 
+
 ```
 
 
-
-For beta 1:6
 
 ```{r}
-beta1_try = list(1:6)
+sim_results_1 =
+  sim_results %>% 
+  group_by(beta) %>% 
+  count(p_value <0.05) %>% 
+  janitor::clean_names() %>% 
+  select(
+    p_val_sig = p_value_0_05,
+    p_val_total = n) %>% 
+  mutate(
+     prop = p_val_total / sum(p_val_total)) %>% 
+  filter(p_val_sig == "TRUE")
 ```
+
+Prop shows the prop of times that H0 was rejected
+
+Plot for association between effect size and power.
+
+```{r}
+sim_results_1 %>% 
+  ggplot(aes(x = beta, y = prop)) +
+  geom_point() +
+  labs(
+    x = "True value",
+    y = "Power of the test" 
+  )
+```
+
+```{r}
+
+```
+
+
 
 
 
