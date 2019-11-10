@@ -37,16 +37,18 @@ iris_with_missing = iris %>%
 
 # Problem 1
 
-Count missing values in the df
+Count missing values in the data frame. Each variable in the data frame contains 20 missing values.
 
 ```{r}
 skimr::skim(iris_with_missing)
 ```
 
 ```{r, problem 1}
-iris_with_missing = iris_with_missing %>% janitor::clean_names()
+iris_with_missing = 
+  iris_with_missing %>% 
+  janitor::clean_names()
 
-# function for num and char
+# function
 my_function = function(x) {
   
   if(is.numeric(x)) {
@@ -55,6 +57,7 @@ my_function = function(x) {
     replace_na(x, "virginica")
   }
 }
+
 new_iris = map_df(iris_with_missing,my_function)
 
 # check missing values in mapped data frame
@@ -62,20 +65,22 @@ sum_na = sum(is.na(new_iris))
 names = distinct(new_iris,species)
 
 # in line 
-# The `r new_iris` data frame has `r sum_na` missing values. In character variables missing values were replaced withthe mean value of that variable and in character variable they were replaced with "virginica". Character value in the new data frame has three distinct values `r names`.
+# The `r new_iris` data frame has `r sum_na` missing values. In character variables missing values were replaced with the mean value of that variable and in character variable they were replaced with "virginica". Character value in the new data frame has three distinct values `r names`.
+
 ```
-
-
 
 # Problem 2
 
 * Read in data for each subject 
-```{r, load the data}
+
+```{r, load the data, message = FALSE}
 # Read the files
 
 read_plus <- function(x) {
+  
     read_csv(x) %>% 
         mutate(filename = x)
+  
 }
 
 trial =
@@ -86,7 +91,7 @@ trial =
 trial_df = map_df(trial, read_plus)
 ```
 
-* Tidy the result
+* Tidy and nest the result into concise tibble.
 
 ```{r, tidy results}
 trial_tidy =
@@ -120,7 +125,7 @@ trial_tidy %>%
   )
 ```
 
-The plot above depicts change of values over the 8 weeks of trial for each participant in control and experimental arms. It can be seen from the plot that participants in experimental arm had an upward trend of values, in contrast to participants in the control arm.
+The plot above depicts the change of values over the 8 weeks of trial for each participant in control and experimental arms. It can be seen from the plot that participants in experimental arm had an upward trend of values, in contrast to participants in the control arm.
 
 
 # Problem 3
@@ -200,7 +205,7 @@ sim_results_1 %>%
   )
 ```
 
-Make a plot showing the average estimate of β1 on the y axis and the true value of β1 on the x axis. 
+* Data frame with average estimate of β1 on the y axis and the true value of β1.
 
 ```{r, average of all estimates}
 all_estimates = 
@@ -214,8 +219,7 @@ all_estimates =
 
 ```
 
-Make a second plot (or overlay on the first) the average estimate of β̂1 only in samples for which the null was rejected on the y axis and the true value of β1 on the x axis. 
-
+* Data frame with the average estimate of β̂1 only in samples for which the null was rejected and the true value of β1.
 ```{r, significant est}
 significant_estimates = 
   sim_results %>%
@@ -229,6 +233,10 @@ significant_estimates =
 ```
 
 
+* Blue line on the graph represends the average of 10,000 samples with n = 30 for each beta1. These values correspond to the true values of the beta1. Yellow line represends the average value of each beta1 for which the null hypothesis was rejected (H_0: beta1 = 1:6). As it is seen from the plot, yellow line approaches blue when effect size increases (given everything else stays constant).  
+
+As effect size increases, so does the power of the test. Yellow line approaches true value as effect size goes increases, because it is easier to detect effect size that is large.  
+
 ```{r, ggplot}
 merged_estimates = 
   inner_join(all_estimates, significant_estimates, by = "beta") %>% 
@@ -236,13 +244,13 @@ merged_estimates =
   geom_line(aes(y = ave_estimate, color = "blue")) +
   geom_line(aes(y = ave_sig_estimate, color = "yellow")) +
     labs(
+    title = "Association between true β and estimate of β",
     x = "True value of Beta1",
     y = "Average value of estimates" 
   )
+
+merged_estimates 
 ```
 
-Blue line on the graph represends the average of 10,000 samples with n = 30 for each beta1. These values correspond to the true values of the beta1. Yellow line represends the average value of each beta1 for which the null hypothesis was rejected (H_0: beta1 = 1:6). As it is seen from the plot, yellow line approaches blue when effect size increases (given everything else stays constant).  
-
-As effect size increases, so does the power of the test. Yellow line approaches true value as effect size goes increases, because it is easier to detect effect size that is large.  
 
 
